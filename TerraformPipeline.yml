@@ -1,0 +1,49 @@
+trigger:
+  branches:
+    include:
+    - 'Dev'
+pool:
+  name: 'AA-AKS-ACCESS-Win'
+  demands:
+  - agent.name -equals AATFAgent
+stages:
+- stage: ''
+  jobs:
+  - job: ''
+    displayName: Terraform Creation
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+    - task: TerraformTaskV4@4
+      displayName: Terraform IInit
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/TF-Fun-Box'
+        backendServiceArm: 'AA-IaC-SP'
+        backendAzureRmResourceGroupName: 'AA-TF-FUN-BOX-Resourcegroup'
+        backendAzureRmStorageAccountName: 'aatffunboxsa00001'
+        backendAzureRmContainerName: 'tffunboxstate0001'
+        backendAzureRmKey: 'tffunboxdevstatecloud.tfstate'
+    - task: TerraformTaskV4@4
+      displayName: Terraform VValidate
+      inputs:
+        provider: 'azurerm'
+        command: 'validate'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/TF-Fun-Box'
+    - task: TerraformTaskV4@4
+      displayName: Terraform PPlan
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/TF-Fun-Box'
+        environmentServiceNameAzureRM: 'AA-IaC-SP'
+    - task: TerraformTaskV4@4
+      displayName: Terraform Ccreate
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        workingDirectory: '$(System.DefaultWorkingDirectory)/TF-Fun-Box'
+        environmentServiceNameAzureRM: 'AA-IaC-SP'
+
